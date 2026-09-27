@@ -1,0 +1,15 @@
+{
+  "case_id": "EXIM-DEMO-001",
+  "required_documents": [
+    "invoice",
+    "packing_list",
+    "declaration"
+  ],
+  "received_documents": [
+    "invoice",
+    "packing_list"
+  ],
+  "discrepancies": [],
+  "verification_complete": false,
+  "expected_recommendation": "ASK"
+}
