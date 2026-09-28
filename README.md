@@ -46,3 +46,8 @@ Tests check whether incomplete, unverified, discrepant and high-risk cases produ
 
 ## License
 MIT.
+
+## Extended implementation
+
+- `role_policy.py` — role-based permissions for trader, broker, freight/logistics actors and reviewer workflows.
+- Explicit separation between document submission, discrepancy recording and verification authority.
