@@ -1,0 +1,14 @@
+[build-system]
+requires=["setuptools>=68"]
+build-backend="setuptools.build_meta"
+
+[project]
+name="exim-copilot-core"
+version="0.1.0"
+description="Governed workflow engine for AI-assisted export-import operations: documents, discrepancies, verification, escalation and auditable action."
+requires-python=">=3.10"
+license={text="MIT"}
+authors=[{name="Syed Hafiz Ali"}]
+
+[tool.setuptools]
+py-modules=["exim_copilot_core"]
