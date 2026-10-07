@@ -1,53 +1,66 @@
 # EXIM Copilot Core
 
-> Governed workflow engine for AI-assisted export-import operations: documents, discrepancies, verification, escalation and auditable action.
+<p align="center">
+  <strong>Governed Workflow Core for AI-Assisted Trade Operations</strong><br/>
+  <sub>Documents → discrepancies → verification → evidence → authorized action.</sub>
+</p>
 
-## Status
-**Reproducible prototype** with executable Python, deterministic tests, and CI. It does not claim production deployment, regulatory approval, or real-world validation.
+<p align="center">
+  <a href="https://github.com/Hafiz-IIT/exim-copilot-core/actions"><img src="https://img.shields.io/github/actions/workflow/status/Hafiz-IIT/exim-copilot-core/ci.yml?label=CI" alt="CI"/></a>
+  <img src="https://img.shields.io/badge/status-reproducible%20prototype-blue" alt="Prototype"/>
+  <img src="https://img.shields.io/badge/domain-export--import-orange" alt="EXIM"/>
+</p>
 
-## Problem
-Trade automation often jumps from extracted text straight to action. This core makes missing information, discrepancy handling, verification and human escalation explicit workflow states.
+## The problem
 
-## Architecture
-Case intake → required-document tracking → discrepancy registry → verification state → risk gate → ACT / ASK / VERIFY / ESCALATE → evidence packet.
+Trade workflows contain many points where an AI assistant could move too quickly from **extracted information → operational action**.
 
-## Quick start
-```bash
-python -m unittest discover -s tests -v
-python exim_copilot_core.py
+This core deliberately inserts governance states:
+
+```
+Case intake
+   ↓
+Required documents
+   ↓
+Discrepancies
+   ↓
+Verification
+   ↓
+Risk / permission gate
+   ↓
+ACT · ASK · VERIFY · ESCALATE
 ```
 
+## Try it
+
+```bash
+python exim_copilot_core.py
+python -m unittest discover -s tests -v
+```
+
+The second-stage `role_policy.py` layer separates authority for traders, brokers, freight/logistics operators and reviewers.
+
 ## Implemented
-- Case state model
-- Required-document tracking
-- Discrepancy recording
-- Verification state
-- High-risk escalation
-- Evidence packet generation
-- Audit events
-- Tests and CI
 
-## Evaluation
-Tests check whether incomplete, unverified, discrepant and high-risk cases produce the intended governance outcome.
+- case state model
+- required-document tracking
+- discrepancy registry
+- verification state
+- role-based permissions
+- explicit action states
+- audit events
+- deterministic tests + CI
 
-## Research lineage
-- *Modular AI Frameworks for Multi-Vertical Startup Innovation*
-- *Human–AI Symbiosis: Toward Next-Generation Consumer Applications*
-- *The Future of Digital Trust: Secure Data Interactions in User-Centric Platforms*
+## Engineering principle
 
-## Limitations
-- No production workflow engine
-- No customs-system credentials or APIs
-- No real client data bundled
-- No claim of end-to-end deployed EXIM platform
+**Workflow authority is explicit.** A user who can upload evidence is not automatically authorized to verify it.
 
-## Structure
-`exim_copilot_core.py` · `tests/` · `docs/` · `ROADMAP.md` · `CITATION.cff` · CI
+## Relationship to the larger EXIM Copilot
 
-## License
-MIT.
+This repository is the **governance/core layer**, not the full commercial product vision. OCR, customs integrations, HS/RITC assistance, shipment intelligence, physical scanning and enterprise workflows remain separate research/product layers unless explicitly implemented elsewhere.
 
-## Extended implementation
+## Research boundary
 
-- `role_policy.py` — role-based permissions for trader, broker, freight/logistics actors and reviewer workflows.
-- Explicit separation between document submission, discrepancy recording and verification authority.
+Prototype only. No claim of customs-law automation, regulatory approval, production deployment or integration with ICEGATE/DGFT.
+
+Related work: [EXIM Document Truth Bench](https://github.com/Hafiz-IIT/exim-document-truth-bench) · [Secure Document RAG Agent](https://github.com/Hafiz-IIT/secure-doc-rag-agent) · [Cargo Scan Consistency Lab](https://github.com/Hafiz-IIT/cargo-scan-consistency-lab)
