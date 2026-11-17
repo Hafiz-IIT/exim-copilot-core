@@ -26,6 +26,35 @@ class CopilotCoreTests(unittest.TestCase):
         case.add_discrepancy("weight mismatch")
         self.assertEqual(case.recommend(), Recommendation.ESCALATE)
 
+    def test_new_document_invalidates_previous_verification(self):
+        case = Case("x", {"invoice", "packing_list"})
+        case.add_document("invoice")
+        case.add_document("packing_list")
+        case.mark_verified()
+        self.assertEqual(case.recommend(), Recommendation.ACT)
+
+        case.add_document("certificate_of_origin")
+        self.assertFalse(case.verification_complete)
+        self.assertEqual(case.recommend(), Recommendation.VERIFY)
+        self.assertIn("verification:invalidated:document_added", case.events)
+
+    def test_new_discrepancy_invalidates_previous_verification(self):
+        case = Case("x", {"invoice"})
+        case.add_document("invoice")
+        case.mark_verified()
+        case.add_discrepancy("weight mismatch")
+        self.assertFalse(case.verification_complete)
+        self.assertEqual(case.recommend(), Recommendation.VERIFY)
+        self.assertIn("verification:invalidated:discrepancy_added", case.events)
+
+    def test_readding_existing_document_does_not_invalidate_verification(self):
+        case = Case("x", {"invoice"})
+        case.add_document("invoice")
+        case.mark_verified()
+        case.add_document("invoice")
+        self.assertTrue(case.verification_complete)
+        self.assertEqual(case.recommend(), Recommendation.ACT)
+
 
 if __name__ == "__main__":
     unittest.main()
