@@ -22,10 +22,21 @@ class Case:
     events: list[str] = field(default_factory=list)
 
     def add_document(self, kind: str) -> None:
-        self.received_documents.add(kind)
+        if not isinstance(kind, str) or not kind.strip():
+            raise ValueError("document kind must be a non-empty string")
+        if kind not in self.received_documents:
+            if self.verification_complete:
+                self.verification_complete = False
+                self.events.append("verification:invalidated:document_added")
+            self.received_documents.add(kind)
         self.events.append(f"document:{kind}")
 
     def add_discrepancy(self, detail: str) -> None:
+        if not isinstance(detail, str) or not detail.strip():
+            raise ValueError("discrepancy detail must be a non-empty string")
+        if self.verification_complete:
+            self.verification_complete = False
+            self.events.append("verification:invalidated:discrepancy_added")
         self.discrepancies.append(detail)
         self.events.append(f"discrepancy:{detail}")
 
