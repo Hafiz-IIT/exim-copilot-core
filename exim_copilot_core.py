@@ -20,18 +20,50 @@ class Case:
     verification_complete: bool = False
     high_risk: bool = False
     events: list[str] = field(default_factory=list)
+    uploaded_by: set[str] = field(default_factory=set)
+    verification_actors: set[str] = field(default_factory=set)
 
-    def add_document(self, kind: str) -> None:
+    @staticmethod
+    def _actor(actor_id: str) -> None:
+        if not isinstance(actor_id, str) or not actor_id.strip():
+            raise ValueError("actor_id must be a non-empty string")
+
+    def _add_document(self, kind: str, actor_id: str) -> None:
+        self._actor(actor_id)
+        if not isinstance(kind, str) or not kind.strip():
+            raise ValueError("document kind must be non-empty")
         self.received_documents.add(kind)
-        self.events.append(f"document:{kind}")
+        self.uploaded_by.add(actor_id)
+        self.events.append(f"actor:{actor_id}:document:{kind}")
 
-    def add_discrepancy(self, detail: str) -> None:
+    def _add_discrepancy(self, detail: str, actor_id: str) -> None:
+        self._actor(actor_id)
+        if not isinstance(detail, str) or not detail.strip():
+            raise ValueError("discrepancy detail must be non-empty")
         self.discrepancies.append(detail)
-        self.events.append(f"discrepancy:{detail}")
+        self.events.append(f"actor:{actor_id}:discrepancy:{detail}")
 
-    def mark_verified(self) -> None:
-        self.verification_complete = True
-        self.events.append("verification:complete")
+    def _resolve_discrepancy(self, detail: str, actor_id: str) -> None:
+        self._actor(actor_id)
+        if detail not in self.discrepancies:
+            raise KeyError(detail)
+        self.discrepancies.remove(detail)
+        self.events.append(f"actor:{actor_id}:discrepancy-resolved:{detail}")
+
+    def _record_verification(self, actor_id: str) -> None:
+        self._actor(actor_id)
+        if actor_id in self.uploaded_by:
+            raise PermissionError("a document uploader cannot verify their own case")
+        if self.missing_documents:
+            raise RuntimeError("cannot verify while required documents are missing")
+        if self.discrepancies:
+            raise RuntimeError("cannot verify while discrepancies remain unresolved")
+        self.verification_actors.add(actor_id)
+        required_reviewers = 2 if self.high_risk else 1
+        self.verification_complete = len(self.verification_actors) >= required_reviewers
+        self.events.append(f"actor:{actor_id}:verification-review")
+        if self.verification_complete:
+            self.events.append("verification:complete")
 
     @property
     def missing_documents(self) -> set[str]:
@@ -53,6 +85,7 @@ class Case:
             "missing_documents": sorted(self.missing_documents),
             "discrepancies": list(self.discrepancies),
             "verification_complete": self.verification_complete,
+            "verification_actors": sorted(self.verification_actors),
             "high_risk": self.high_risk,
             "recommendation": self.recommend().value,
             "events": list(self.events),
@@ -60,7 +93,9 @@ class Case:
 
 
 if __name__ == "__main__":
+    from role_policy import Role, WorkflowService
     case = Case("demo", {"invoice", "packing_list", "declaration"})
-    case.add_document("invoice")
-    case.add_document("packing_list")
+    workflow = WorkflowService(case)
+    workflow.add_document(Role.TRADER, "invoice", actor_id="trader-1")
+    workflow.add_document(Role.TRADER, "packing_list", actor_id="trader-1")
     print(case.evidence_packet())
