@@ -19,7 +19,7 @@ PERMISSIONS = {
     Role.BROKER: {"upload_document", "record_discrepancy"},
     Role.FREIGHT_FORWARDER: {"upload_document"},
     Role.LOGISTICS_OPERATOR: {"upload_document"},
-    Role.REVIEWER: {"upload_document", "record_discrepancy", "mark_verified"},
+    Role.REVIEWER: {"upload_document", "record_discrepancy", "resolve_discrepancy", "mark_verified"},
 }
 
 
@@ -42,17 +42,22 @@ class WorkflowService:
         self.case = case
         self.policy = policy or RolePolicy()
 
-    def add_document(self, role: Role, kind: str) -> None:
+    def add_document(self, role: Role, kind: str, *, actor_id: str) -> None:
         self.policy.require(role, "upload_document")
-        self.case.add_document(kind)
-        self.case.events.append(f"actor:{role.value}:upload_document")
+        self.case._add_document(kind, actor_id)
+        self.case.events.append(f"actor-role:{role.value}:upload_document")
 
-    def add_discrepancy(self, role: Role, detail: str) -> None:
+    def add_discrepancy(self, role: Role, detail: str, *, actor_id: str) -> None:
         self.policy.require(role, "record_discrepancy")
-        self.case.add_discrepancy(detail)
-        self.case.events.append(f"actor:{role.value}:record_discrepancy")
+        self.case._add_discrepancy(detail, actor_id)
+        self.case.events.append(f"actor-role:{role.value}:record_discrepancy")
 
-    def mark_verified(self, role: Role) -> None:
+    def resolve_discrepancy(self, role: Role, detail: str, *, actor_id: str) -> None:
+        self.policy.require(role, "resolve_discrepancy")
+        self.case._resolve_discrepancy(detail, actor_id)
+        self.case.events.append(f"actor-role:{role.value}:resolve_discrepancy")
+
+    def mark_verified(self, role: Role, *, actor_id: str) -> None:
         self.policy.require(role, "mark_verified")
-        self.case.mark_verified()
-        self.case.events.append(f"actor:{role.value}:mark_verified")
+        self.case._record_verification(actor_id)
+        self.case.events.append(f"actor-role:{role.value}:mark_verified")
