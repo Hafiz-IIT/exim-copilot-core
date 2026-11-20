@@ -46,6 +46,25 @@ class CopilotCoreTests(unittest.TestCase):
         service.mark_verified(Role.REVIEWER, actor_id="reviewer")
         self.assertEqual(case.recommend(), Recommendation.ACT)
 
+    def test_new_document_invalidates_prior_verification(self):
+        case = Case("x", {"invoice"})
+        service = WorkflowService(case)
+        service.add_document(Role.TRADER, "invoice", actor_id="trader")
+        service.mark_verified(Role.REVIEWER, actor_id="reviewer")
+        self.assertTrue(case.verification_complete)
+        service.add_document(Role.TRADER, "packing_list", actor_id="trader")
+        self.assertFalse(case.verification_complete)
+        self.assertEqual(case.recommend(), Recommendation.VERIFY)
+
+    def test_new_discrepancy_invalidates_prior_verification(self):
+        case = Case("x", {"invoice"})
+        service = WorkflowService(case)
+        service.add_document(Role.TRADER, "invoice", actor_id="trader")
+        service.mark_verified(Role.REVIEWER, actor_id="reviewer")
+        service.add_discrepancy(Role.BROKER, "weight mismatch", actor_id="broker")
+        self.assertFalse(case.verification_complete)
+        self.assertEqual(case.recommend(), Recommendation.VERIFY)
+
     def test_high_risk_discrepancy_escalates(self):
         case = Case("x", {"invoice"}, high_risk=True)
         service = WorkflowService(case)
