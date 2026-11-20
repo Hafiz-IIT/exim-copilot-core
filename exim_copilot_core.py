@@ -34,6 +34,8 @@ class Case:
             raise ValueError("document kind must be non-empty")
         self.received_documents.add(kind)
         self.uploaded_by.add(actor_id)
+        self.verification_complete = False
+        self.verification_actors.clear()
         self.events.append(f"actor:{actor_id}:document:{kind}")
 
     def _add_discrepancy(self, detail: str, actor_id: str) -> None:
@@ -41,6 +43,8 @@ class Case:
         if not isinstance(detail, str) or not detail.strip():
             raise ValueError("discrepancy detail must be non-empty")
         self.discrepancies.append(detail)
+        self.verification_complete = False
+        self.verification_actors.clear()
         self.events.append(f"actor:{actor_id}:discrepancy:{detail}")
 
     def _resolve_discrepancy(self, detail: str, actor_id: str) -> None:
@@ -48,6 +52,8 @@ class Case:
         if detail not in self.discrepancies:
             raise KeyError(detail)
         self.discrepancies.remove(detail)
+        self.verification_complete = False
+        self.verification_actors.clear()
         self.events.append(f"actor:{actor_id}:discrepancy-resolved:{detail}")
 
     def _record_verification(self, actor_id: str) -> None:
