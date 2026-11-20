@@ -15,7 +15,7 @@ class RolePolicyTests(unittest.TestCase):
     def test_reviewer_can_verify(self):
         case = Case("x", {"invoice"})
         service = WorkflowService(case)
-        service.add_document(Role.TRADER, "invoice")
+        service.add_document(Role.TRADER, "invoice", actor_id="trader-1")
         service.mark_verified(Role.REVIEWER, actor_id="reviewer-1")
         self.assertEqual(case.recommend(), Recommendation.ACT)
 
